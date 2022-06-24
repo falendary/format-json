@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="Format JSON">
+    <meta 
+     name='viewport' 
+     content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' 
+/>
+
+    <title>Format JSON</title>
+
+    <style type="text/css">
+
+        * {
+            font-family: sans-serif;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: ;
+        }
+
+        .text-center {
+            text-align: center
+        }
+
+        .container {
+            width: 980px;
+            margin: 0 auto;
+        }
+
+        label {
+            opacity: .7;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+
+        .input-textarea {
+            display: block;
+            resize: none;
+            width: 100%;
+        }
+
+        .text-container {
+            margin-top: 32px;
+            width: 100%;
+        }
+
+        .overflow-hidden {
+            overflow: hidden;
+        }
+
+        .float-left {
+            float: left;
+        }
+
+        .float-right {
+            float: right;
+        }
+
+        .position-relative {
+            position: relative;
+        }
+
+        .copy-to-buffer {
+            position: absolute;
+            right: 2px;
+            top: 6px;
+            background: #fff;
+            border: 1px solid #000;
+            cursor: pointer;
+
+        }
+        .copy-to-buffer:hover {
+            opacity: .7;
+        }
+
+        pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+    .string { color: green; }
+    .number { color: darkorange; }
+    .boolean { color: blue; }
+    .null { color: magenta; }
+    .key { color: red; }
+
+
+    </style>
+
+</head>
+
+<body>
+<div>
+
+    <div class="container">
+
+        <h1 class="text-center">Format JSON</h1>
+
+        <div>
+            <div class="overflow-hidden">
+
+                <label>Input</label>
+
+            </div>
+            
+            <textarea class="input-textarea" id="inputTextearea" rows="5" style="height: 300px">{"message":"Hello world!"}</textarea>
+        </div>
+
+        <div class="position-relative">
+
+            <button class="copy-to-buffer" id="copyToBuffer">Copy</button>
+
+            <pre class="text-container" id="textContainer"></pre>
+
+        </div>
+
+
+    </div>
+    
+</div>
+
+<script type="text/javascript">
+
+    var inputTextearea = document.getElementById('inputTextearea');
+    var textContainer = document.getElementById('textContainer');
+    var copyToBufferButton = document.getElementById('copyToBuffer');
+
+    textContainer.innerHTML = inputTextearea.value
+
+    var formattedJson = JSON.stringify(JSON.parse('{"message": "Hello world!"}', undefined, 4))
+
+    function copyToBuffer() {
+
+        console.log('copy?  ')
+
+
+        var listener = function (e) {
+
+            e.clipboardData.setData('text/plain', formattedJson);
+
+            e.preventDefault();
+        };
+
+        document.addEventListener('copy', listener, false);
+
+        document.execCommand("copy");
+
+        document.removeEventListener('copy', listener, false);
+
+        console.log('copy?  ')
+
+       
+    }
+
+    copyToBufferButton.addEventListener("click", function (e) {
+        copyToBuffer()
+    })
+
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+
+
+    inputTextearea.addEventListener('keypress', function (e) {
+
+        console.log('inputTextearea.value', inputTextearea.value)
+
+        try {
+
+            formattedJson = JSON.stringify(JSON.parse(inputTextearea.value),  undefined, 4)
+
+            textContainer.innerHTML = syntaxHighlight(formattedJson)
+
+        } catch(error){
+
+            try {
+
+                var str1 = (0, eval)('(' + inputTextearea.value + ')');
+
+                formattedJson = JSON.stringify(str1,  undefined, 4)
+
+                textContainer.innerHTML = syntaxHighlight(formattedJson)
+
+            } catch(error) {
+
+                console.error(error)
+
+                textContainer.innerHTML = 'Invalid JSON. ' + error.toString()
+            }
+        }
+        
+
+
+    })
+
+    inputTextearea.addEventListener('input', function (e) {
+
+        try {
+
+            formattedJson = JSON.stringify(JSON.parse(inputTextearea.value),  undefined, 4)
+
+            textContainer.innerHTML = syntaxHighlight(formattedJson)
+
+        } catch(error){
+            try {
+
+                var str1 = (0, eval)('(' + inputTextearea.value + ')');
+
+                formattedJson = JSON.stringify(str1,  undefined, 4)
+
+                textContainer.innerHTML = syntaxHighlight(formattedJson)
+
+            } catch(error) {
+
+                console.error(error)
+
+                textContainer.innerHTML = 'Invalid JSON. ' + error.toString()
+            }
+        }
+        
+    })
+    
+
+    textContainer.innerHTML = syntaxHighlight(formattedJson)
+
+
+</script>
+
+</body>
+</html>
